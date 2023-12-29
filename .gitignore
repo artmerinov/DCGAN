@@ -1,0 +1,15 @@
+# byte-compiled
+__pycache__/
+
+# jupyter notebook
+.ipynb_checkpoints
+
+# environments
+.venv/
+
+# data and model artifacts
+data/
+weights/
+
+# OS generated files
+.DS_Store
