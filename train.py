@@ -64,12 +64,18 @@ def train():
         g_loss_running = 0
         d_loss_running = 0
 
+        # D and G play the two-player minimax game
+
         for batch_id, real_batch in enumerate(dataloader):
             
-            # -----------------------------------------
-            # 1. Update (improve) Discriminator network
-            # maximize log(D(x)) + log(1 - D(G(z)))
-            # -----------------------------------------
+            # --------------------------------------------------------------------------
+            # 1. Update/improve Discriminator by maximizing log(D(x)) + log(1 - D(G(z))).
+
+            # D(x) is the probability that real image from data distribution p_data(x) 
+            # is a real image.
+            # D(G(z)) is the probability that the fake image from noise prior p_g(z) 
+            # (the output of the generator G(z)) is a real image. 
+            # --------------------------------------------------------------------------
 
             real_batch = real_batch.to(device)
             noise = torch.randn(config.batch_size, config.noise_dim, 1, 1).to(device)
@@ -86,14 +92,20 @@ def train():
             d_loss.backward(retain_graph=True) # we will reuse fake_batch in generator below
             d_optimizer.step()
 
-            # ---------------------------------------------------
-            # 2. Update (improve) Generator network
-            # minimize log(1 - D(G(z))) <-> maximize log(D(G(z)))
-            # ---------------------------------------------------
+            # --------------------------------------------------------------------------
+            # 2. Update/improve Generator by minimizing log(1 - D(G(z))).
+
+            # Rather than training G to minimize log(1 − D(G(z))), we can train G to 
+            # maximize log D(G(z)), because it provides much stronger gradients early 
+            # in learning.
+            # Generator wants to trick discriminator, so fake batch will be real for the 
+            # discriminator.
+            # --------------------------------------------------------------------------
             
             # Since we just updated D, perform another forward pass of all-fake batch through D
+            # Fake labels are real for generator cost!
             d_prob = D(fake_batch).view(-1)
-            g_loss = criterion(d_prob, torch.ones_like(d_prob_real))
+            g_loss = criterion(d_prob, torch.ones_like(d_prob)) 
             g_loss_running += g_loss.item()
             
             G.zero_grad()
