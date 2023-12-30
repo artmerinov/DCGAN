@@ -10,6 +10,7 @@ __pycache__/
 # data and model artifacts
 data/
 weights/
+generated_images/
 
 # OS generated files
 .DS_Store
